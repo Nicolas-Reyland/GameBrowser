@@ -1,14 +1,33 @@
 # GameBrowser - GUIfunctions
 from Game import Game
 from numpy import save as save_file
-from tkinter import filedialog
+from tkinter import filedialog, END # END for an entry clear
+from fuzzywuzzy import fuzz
 import tkinter as tk
 import os
 
-def search(e=0, gb):
+def string_score(s1, s2):
+	'''Returns 1 - the start-index of s2 in s1 divided by (the length of s1 - the length of s2)'''
+	s1, s2 = s1.lower(), s2.lower()
+	if s1 == s2: return 1
+	return 1 - s1.index(s2) / (len(s1) - len(s2))
+
+def search(gb):
 	entry = widgets['search bar'].get()
-	# ... search here
-	print('searched')
+	# search
+	min_score = .3
+	ratios = [(fuzz.ratio(game.name, entry) / 100, i) for i,game in enumerate(gb.games)]
+	rule_search = [(string_score(game.name, entry), i) for i,game in enumerate(gb.games) if entry.lower() in game.name.lower()]
+	final_search = list(filter(lambda name: name[0] > min_score, rule_search + ratios))
+	final_search = list(map(lambda x: x[1], final_search))
+	final_search = list(set(final_search))
+
+	gb.show_selected(final_search)
+
+def clear_search(gb):
+	gb.widg.widgets['search bar'].delete(0, END)
+	search(gb)
+
 
 def ask_game_name(game_path):
 	toplevel = tk.Toplevel(width=200)
@@ -42,10 +61,16 @@ def add_game(gb):
 		gb.redraw()
 
 def select_game(info):
-	gb, i = info
+	if len(info) == 2:
+		gb, i = info
+		button_index = i
+	elif len(info) == 3:
+		gb, i, button_index = info
+	else:
+		raise ValueError('{} is not a valid length for info!'.format(len(info)))
 	if gb.selected is None:
 		for index,button in enumerate(gb.buttons):
-			if index != i:
+			if index != button_index:
 				button.widget.configure(bg='#d9d9d9')
 			else:
 				button.widget.configure(bg='#46fa46')

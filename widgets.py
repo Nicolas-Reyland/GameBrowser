@@ -24,15 +24,18 @@ bottom_frame.place(relx=0,rely=.91,relwidth=1,relheight=.08)
 widgets['bottom frame'] = bottom_frame
 
 # - Search Bar -
-search_bar = tk.Entry(top_frame, text='Rechercher un jeu ...', validatecommand=lambda : GUIf.search(gb)) # Combobox(top_frame, values=quick_search())
+search_var = tk.StringVar()
+search_var.trace_add('write', lambda *args: GUIf.search(gb))
+search_bar = tk.Entry(top_frame, text='Rechercher un jeu ...', textvariable=search_var, validatecommand=lambda : GUIf.search(gb)) # Combobox(top_frame, values=quick_search())
 #search_bar.set('Rechercher un jeu ...')
 search_bar.place(relx=0,rely=0,relwidth=.9,relheight=1)
 search_bar.focus_set()
 widgets['search bar'] = search_bar
+widgets['search var'] = search_var
 
-search_button = tk.Button(top_frame, text='OK', command=lambda : GUIf.search(gb))
-search_button.place(relx=.9,rely=0,relwidth=.1,relheight=1)
-widgets['search button'] = search_button
+search_clear_button = tk.Button(top_frame, text='X', command=lambda : GUIf.clear_search(gb))
+search_clear_button.place(relx=.9,rely=0,relwidth=.1,relheight=1)
+widgets['search clear button'] = search_clear_button
 
 
 # - Icon Frame -

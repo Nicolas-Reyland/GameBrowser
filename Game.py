@@ -1,9 +1,8 @@
 # GameBrowser - Game
 import tkinter as tk
-from icon import extract
+from icon import extract, bmp_to_logo
 from psutil import virtual_memory, cpu_percent
 from numpy import load as load_file
-from bmp import bmp_to_logo
 import os, threading, time, requests, sys
 import subprocess
 
