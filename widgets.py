@@ -6,6 +6,7 @@ import GUIfunctions as GUIf
 
 root = tk.Tk()
 tk.Canvas(root, width=800, height=500).pack()
+root.title('GameBrowser')
 
 widgets = {'root': root}
 GUIf.widgets = widgets

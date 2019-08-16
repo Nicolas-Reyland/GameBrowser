@@ -92,12 +92,13 @@ def select_game(info):
 
 
 def start_game(gb):
+	gb.widg.root.withdraw()
 	if gb.selected:
-		gb.selected.launch()
+		gb.selected.launch(gb.widg.root)
 
 def remove_game(gb):
 	if gb.selected:
-		if custom_askyesno('Confirmer', 'Voulez-vous vraiment retirer {} de votre liste ?'.format(gb.selected.name), width=200):
+		if custom_askyesno('Confirmer', 'Voulez-vous vraiment retirer {} de votre liste ?'.format(gb.selected.name), width=300):
 			os.remove(os.path.join(gb.game_path, gb.selected.name) + '.npy')
 			gb.games.remove(gb.selected)
 			gb.selected = None
