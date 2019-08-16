@@ -1,6 +1,6 @@
 # GameBrowser - GameBrowser
 from graphics import widg
-from bmp import bmp_to_logo
+from icon import bmp_to_logo
 from Game import icons_from_games
 from CustomTkWidget import CustomTkWidget
 import sys

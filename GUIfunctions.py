@@ -5,7 +5,7 @@ from tkinter import filedialog
 import tkinter as tk
 import os
 
-def search(e=0):
+def search(e=0, gb):
 	entry = widgets['search bar'].get()
 	# ... search here
 	print('searched')
