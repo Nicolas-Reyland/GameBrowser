@@ -11,7 +11,7 @@ from PIL import Image, ImageTk
 
 def bmp_to_logo(file, imwidth):
     if type(file) == str:
-        if isfile(file):
+        if os.path.isfile(file):
             image = Image.open(file + '.bmp')
     else:
         image = Image.fromarray(file)

@@ -1,12 +1,13 @@
 # GameBrowser - Game
 import tkinter as tk
+from tkinter.messagebox import askyesno
+from Modules import open_steam
 from icon import extract, bmp_to_logo
-from psutil import virtual_memory, cpu_percent
 from numpy import load as load_file
 # from screeninfo import get_monitors
 from win32api import GetMonitorInfo, MonitorFromPoint
 import os, threading, time, requests, sys
-import subprocess
+import subprocess, psutil
 
 r'''
 cd c:\Documents\python\projects\GameBrowser
@@ -18,43 +19,70 @@ class Game:
 	def __init__(self, path, name):
 
 		self.exe_path = path
-		self.launched = False
 		self.suspended = False
 		self.name = name
 
 		self.shown = False
 		self.inthread = False
+		self.pids = []
+
+		self.launched = False
+		self.last_launch_params = []
+
+		self.MAX_THREAD_JOIN_TRY = 1
 
 	def test_icon(self):
 		test = extract(self.exe_path)
 		return test
 
-	def launch(self, root):
+	def launch(self, root, b_show_box, topmost, info):
 		self.root = root
-		self.icon = extract(self.exe_path)
-		self.show_box()
+		self.last_launch_params = [b_show_box, topmost, info]
+		if b_show_box:
+			self.icon = extract(self.exe_path)
+			self.show_box(topmost)
 		self.launched = True
 		si = subprocess.STARTUPINFO()
 		si.dwFlags |= subprocess.STARTF_USESHOWWINDOW # startupinfo=si # creationflags=subprocess.CREATE_NO_WINDOW
 		threading.Thread(target=lambda :subprocess.call('"{}"'.format(self.exe_path), startupinfo=si)).start()
+		self.find_pids()
 
-	def force_stop(self):
-		stdout = os.system('taskkill /IM "{}" /F'.format(os.path.basename(self.exe_path)))
-		print(f'stdout: {stdout}')
+	def force_stop(self): # only by pid (don't wanna do damage...)
+		for pid in self.pids:
+			stdout = os.system(f'taskkill /F /PID {pid}')
+			print(f'stdout: {stdout}')
 		self.launched = False
 		self.close_toplevel()
 		self.root.deiconify()
 
 	def freeze_process(self):
 		if not self.suspended:
-			stdout = os.system('cd "{}" & pssuspend.exe "{}"'.format(os.path.join(os.getcwd(), 'PsTools'), os.path.basename(self.exe_path)))
+			if self.pids: # do by pid
+				for pid in self.pids:
+					stdout = os.system('cd "{}" & pssuspend.exe {}'.format(os.path.join(os.getcwd(), 'PsTools'), pid))
+					print(f'stdout: {stdout}')
+			else: # do by name (pids not ready yet)
+				stdout = os.system('cd "{}" & pssuspend.exe "{}"'.format(os.path.join(os.getcwd(), 'PsTools'), os.path.basename(self.exe_path)))
+				print(f'stdout: {stdout}')
+
 			self.suspended = True
 			self.freeze_button.configure(bg='#ccffff', activebackground='#33ccff', text='Reprendre')
 		else:
-			stdout = os.system('cd "{}" & pssuspend.exe -r "{}"'.format(os.path.join(os.getcwd(), 'PsTools'), os.path.basename(self.exe_path)))
+			if self.pids:
+				for pid in self.pids:
+					stdout = os.system('cd "{}" & pssuspend.exe -r {}'.format(os.path.join(os.getcwd(), 'PsTools'), pid))
+					print(f'stdout: {stdout}')
+			else:
+				stdout = os.system('cd "{}" & pssuspend.exe -r "{}"'.format(os.path.join(os.getcwd(), 'PsTools'), os.path.basename(self.exe_path)))
+				print(f'stdout: {stdout}')
+
 			self.suspended = False
 			self.freeze_button.configure(bg='#33ccff', activebackground='#ccffff', text='Suspendre')
-		print(f'stdout: {stdout}')
+
+	def reset(self):
+		self.suspended = False
+		self.pids = []
+		self.launched = False
 
 	def geometry(self, corner):
 		# monitor = get_monitors()[0] # multi-monitor support ...
@@ -77,12 +105,14 @@ class Game:
 		print('geometry', geometry)
 		self.toplevel.geometry(geometry)
 
-	def show_box(self):
+	def show_box(self, topmost):
 		self.toplevel = tk.Toplevel(width=250,height=100)
 		self.geometry('bottom left') # places the toplevel at a corner
 		self.toplevel.title(self.name)
 		self.toplevel.resizable(False, False)
 		self.toplevel.protocol('WM_DELETE_WINDOW', self.close_toplevel)
+		if topmost:
+			self.toplevel.attributes('-topmost', 'true')
 
 		icon = bmp_to_logo(self.icon, 95)
 		icon_label = tk.Label(self.toplevel)
@@ -116,13 +146,14 @@ class Game:
 
 	def update_labels(self, ram_label, cpu_label, internet_speed_label, isvalid):
 		while isvalid() and getattr(threading.currentThread(), "do_run", True):
+			self.verify_existence()
 			try:
-				ram_label['text'] = 'RAM: {} %'.format(virtual_memory().percent)
-				cpu_label['text'] = 'CPU: {} %'.format(cpu_percent())
+				ram_label['text'] = 'RAM: {} %'.format(psutil.virtual_memory().percent)
+				cpu_label['text'] = 'CPU: {} %'.format(psutil.cpu_percent())
 				try: internet_speed_label['text'] = 'DL: {:.2f} Kb/s'.format(downspeed())
 				except: internet_speed_label['text'] = 'DL: ??? Kb/s'
 				time.sleep(1)
-			except tk.TclError:
+			except (tk.TclError, RuntimeError):
 				break
 
 		self.inthread = False
@@ -131,20 +162,54 @@ class Game:
 		exit('exiting thread')
 
 	def close_toplevel(self):
+		self.toplevel.destroy()
 		self.shown=False
 		self.label_thread.do_run = False
 		counter = 0
 		while self.label_thread.is_alive():
 			print('joining thread ...')
-			self.label_thread.join(timeout=1.5)
+			try: self.label_thread.join(timeout=1.5)
+			except RuntimeError:
+				print('RuntimeError')
+				counter -= .5 # give a half chance
 			counter += 1
-			if counter == 3:
+			if counter >= self.MAX_THREAD_JOIN_TRY:
 				print('join failed after {} attempts. Forcing thread extinction'.format(counter))
 				break
 		print('thread joined')
 		print(f'{self.name} thread stop 2')
-		self.toplevel.destroy()
-		self.root.deiconify()
+		if self.last_launch_params[2]:
+			self.root.deiconify()
+
+	def find_pids(self):
+		self.pids = []
+		for pid in psutil.pids():
+			try:
+				if os.path.basename(self.exe_path).lower() == psutil.Process(pid).name().lower():
+					self.pids.append(pid)
+			except psutil.NoSuchProcess:
+				pass
+
+	def verify_existence(self):
+		if not self.pids:
+			self.find_pids()
+		pid_list = psutil.pids()
+		for pid in self.pids:
+			if not pid in pid_list:
+				print('dead')
+				if self.pids:
+					if askyesno('Attention', 'Le processus semble avoir été arrêté. Voulez-vous le relancer ? (Une réponse négative fermera la petite fenêtre)'):
+						self.close_toplevel()
+						if self.last_launch_params[2]:
+							self.root.withdraw()
+						self.reset()
+						self.launch(self.root, self.last_launch_params[0], self.last_launch_params[1], self.last_launch_params[2])
+					else:
+						self.close_toplevel()
+				break
+		else:
+			print('alive with {}'.format(self.pids))
+
 
 
 def load_games(path):
@@ -157,7 +222,6 @@ def load_games(path):
 		game_path, name, logo = game
 		games.append(Game(game_path, name))
 	return games
-
 
 def icons_from_games(games):
 	icons = []
