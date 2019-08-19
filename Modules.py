@@ -125,7 +125,8 @@ class Settings: # SETTINGS NOT ALL IMPLEMENTED YET
 			self.settings = {'CLOSE_MAIN_AT_LAUNCH': True,
 							 'SHOW_BOX': True,
 							 'START_STEAM_AT_STEAM_GAMES': False, # not iplemented
-							 'TOPMOST_BOX': True}
+							 'TOPMOST_BOX': True,
+							 'SAFE_MODE': True}
 			self.write()
 
 		else:
