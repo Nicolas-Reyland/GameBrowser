@@ -124,8 +124,8 @@ class Settings: # SETTINGS NOT ALL IMPLEMENTED YET
 			os.mkdir(self.settings_path.replace(os.path.basename(self.settings_path), ''))
 			self.settings = {'CLOSE_MAIN_AT_LAUNCH': True,
 							 'SHOW_BOX': True,
-							 'START_STEAM_AT_STEAM_GAMES': False,
-							 'TOPMOST_BOX': False}
+							 'START_STEAM_AT_STEAM_GAMES': False, # not iplemented
+							 'TOPMOST_BOX': True}
 			self.write()
 
 		else:

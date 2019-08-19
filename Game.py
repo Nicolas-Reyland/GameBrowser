@@ -47,34 +47,41 @@ class Game:
 		threading.Thread(target=lambda :subprocess.call('"{}"'.format(self.exe_path), startupinfo=si)).start()
 		self.find_pids()
 
-	def force_stop(self): # only by pid (don't wanna do damage...)
-		for pid in self.pids:
-			stdout = os.system(f'taskkill /F /PID {pid}')
-			print(f'stdout: {stdout}')
-		self.launched = False
-		self.close_toplevel()
-		self.root.deiconify()
-
-	def freeze_process(self):
-		if not self.suspended:
-			if self.pids: # do by pid
-				for pid in self.pids:
-					stdout = os.system('cd "{}" & pssuspend.exe {}'.format(os.path.join(os.getcwd(), 'PsTools'), pid))
-					print(f'stdout: {stdout}')
-			else: # do by name (pids not ready yet)
-				stdout = os.system('cd "{}" & pssuspend.exe "{}"'.format(os.path.join(os.getcwd(), 'PsTools'), os.path.basename(self.exe_path)))
-				print(f'stdout: {stdout}')
-
-			self.suspended = True
-			self.freeze_button.configure(bg='#ccffff', activebackground='#33ccff', text='Reprendre')
-		else:
+	def force_stop(self): # maybe only by pid to avoid damage...
+		if self.launched:
 			if self.pids:
 				for pid in self.pids:
-					stdout = os.system('cd "{}" & pssuspend.exe -r {}'.format(os.path.join(os.getcwd(), 'PsTools'), pid))
+					stdout = os.system(f'taskkill /F /PID {pid}')
 					print(f'stdout: {stdout}')
 			else:
-				stdout = os.system('cd "{}" & pssuspend.exe -r "{}"'.format(os.path.join(os.getcwd(), 'PsTools'), os.path.basename(self.exe_path)))
+				stdout = os.system(f'taskkill /F "{os.path.basename(self.exe_path)}" /IM')
 				print(f'stdout: {stdout}')
+				print('done by name')
+			self.launched = False
+			self.close_toplevel()
+			self.root.deiconify()
+
+	def freeze_process(self):
+		if self.launched:
+			if not self.suspended:
+				if self.pids: # do by pid
+					for pid in self.pids:
+						stdout = os.system('cd "{}" & pssuspend.exe {}'.format(os.path.join(os.getcwd(), 'PsTools'), pid))
+						print(f'stdout: {stdout}')
+				else: # do by name (pids not ready yet)
+					stdout = os.system('cd "{}" & pssuspend.exe "{}"'.format(os.path.join(os.getcwd(), 'PsTools'), os.path.basename(self.exe_path)))
+					print(f'stdout: {stdout}')
+
+				self.suspended = True
+				self.freeze_button.configure(bg='#ccffff', activebackground='#33ccff', text='Reprendre')
+			else:
+				if self.pids:
+					for pid in self.pids:
+						stdout = os.system('cd "{}" & pssuspend.exe -r {}'.format(os.path.join(os.getcwd(), 'PsTools'), pid))
+						print(f'stdout: {stdout}')
+				else:
+					stdout = os.system('cd "{}" & pssuspend.exe -r "{}"'.format(os.path.join(os.getcwd(), 'PsTools'), os.path.basename(self.exe_path)))
+					print(f'stdout: {stdout}')
 
 			self.suspended = False
 			self.freeze_button.configure(bg='#33ccff', activebackground='#ccffff', text='Suspendre')

@@ -13,10 +13,12 @@ def string_score(s1, s2):
 	if s1 == s2: return 1
 	return 1 - s1.index(s2) / (len(s1) - len(s2))
 
-def search(gb):
+def search(gb, enter=False):
 	entry = widgets['search bar'].get()
 	if entry.startswith('!'):
-		return command_handler(entry, gb)
+		if enter:
+			command_handler(entry, gb)
+		return
 
 	# search
 	min_score = .3
@@ -178,14 +180,17 @@ def command_handler(command, gb):
 				if args.startswith('CLOSE_MAIN_AT_LAUNCH'):
 					gb.settings.set('CLOSE_MAIN_AT_LAUNCH', boolarg)
 
-				if args.startswith('SHOW_BOX'):
+				elif args.startswith('SHOW_BOX'):
 					gb.settings.set('SHOW_BOX', boolarg)
 
-				if args.startswith('START_STEAM_AT_STEAM_GAMES'):
+				elif args.startswith('START_STEAM_AT_STEAM_GAMES'):
 					gb.settings.set('START_STEAM_AT_STEAM_GAMES', boolarg)
 
-				if args.startswith('TOPMOST_BOX'):
+				elif args.startswith('TOPMOST_BOX'):
 					gb.settings.set('TOPMOST_BOX', boolarg)
+
+				else:
+					messagebox.showerror('Erreur', 'Le paramètre {} n\' a pas été trouvé.'.format(args.split()[0]))
 
 		if args == 'show': # then it's not a boolean arg, but idk
 			messagebox.showinfo('Info', gb.settings.settings)

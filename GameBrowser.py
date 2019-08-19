@@ -31,7 +31,7 @@ class GameBrowser:
 		self.selected = None
 		self.create_icons()
 
-		self.widg.root.bind('<Return>', lambda _:widg.GUIf.search(self))
+		self.widg.root.bind('<Return>', lambda _:widg.GUIf.search(self, enter=True))
 
 		self.base_path = os.getcwd()
 		self.scanner = Scanner(self)
