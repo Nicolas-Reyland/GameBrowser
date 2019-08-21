@@ -42,10 +42,20 @@ class Game:
 			self.icon = extract(self.exe_path)
 			self.show_box(topmost)
 		self.launched = True
+		threading.Thread(target=self.launch_app).start()
+		self.find_pids()
+
+	def launch_app(self):
 		si = subprocess.STARTUPINFO()
 		si.dwFlags |= subprocess.STARTF_USESHOWWINDOW # startupinfo=si # creationflags=subprocess.CREATE_NO_WINDOW
-		threading.Thread(target=lambda :subprocess.call('"{}"'.format(self.exe_path), startupinfo=si)).start()
-		self.find_pids()
+		try:
+			subprocess.call('"{}"'.format(self.exe_path), startupinfo=si)
+		except Exception as error:
+			if hasattr(error, 'winerror'):
+				if error.winerror == 720:
+					print('showing message')
+					messagebox.showerror('Erreur', 'Cette application nécessite une élévation de privilèges. Il exécuter GameBrowser en tant qu\'administrateur.')
+					self.close_toplevel()
 
 	def force_stop(self): # maybe only by pid to avoid damage...
 		if self.launched:
@@ -91,11 +101,11 @@ class Game:
 		self.pids = []
 		self.launched = False
 
-	def geometry(self, corner):
+	def geometry(self, toplevel, xyadding=(0,0)):
 		# monitor = get_monitors()[0] # multi-monitor support ...
-		self.toplevel.update()
-		width = self.toplevel.winfo_width()
-		height = self.toplevel.winfo_height()
+		toplevel.update()
+		width = toplevel.winfo_width()
+		height = toplevel.winfo_height()
 		# x = 0 # monitor.width - width
 		# y = monitor.height - height
 		monitor_info = GetMonitorInfo(MonitorFromPoint((0,0)))
@@ -108,48 +118,70 @@ class Game:
 		print('monitor',monitor_area)
 		print('work',work_area)
 
+		x += xyadding[0]
+		y += xyadding[1]
+
 		geometry = '{}x{}+{}+{}'.format(width, height, x, y)
 		print('geometry', geometry)
-		self.toplevel.geometry(geometry)
+		toplevel.geometry(geometry)
 
 	def show_box(self, topmost):
-		self.toplevel = tk.Toplevel(width=250,height=100)
-		self.geometry('bottom left') # places the toplevel at a corner
+		self.toplevel = tk.Toplevel(width=280,height=100)
+		self.toplevel.overrideredirect(True)
+		self.geometry(self.toplevel)
 		self.toplevel.title(self.name)
 		self.toplevel.resizable(False, False)
 		self.toplevel.protocol('WM_DELETE_WINDOW', self.close_toplevel)
 		if topmost:
 			self.toplevel.attributes('-topmost', 'true')
 
-		icon = bmp_to_logo(self.icon, 95)
+		icon = bmp_to_logo(self.icon, 98)
 		icon_label = tk.Label(self.toplevel)
 		icon_label.icon = icon
 		icon_label['image'] = icon
-		icon_label.place(relx=.01,rely=.01)
+		icon_label.place(x=1,y=1)
 
 		name_label = tk.Label(self.toplevel, text=self.name, font='bold')
-		name_label.place(relx=.4,rely=.01)
+		name_label.place(x=100,y=1)
 
 		ram_label = tk.Label(self.toplevel, text='RAM: -- %')
-		ram_label.place(relx=.4,rely=.25)
+		ram_label.place(x=100,y=25)
 
 		cpu_label = tk.Label(self.toplevel, text='CPU: -- %')
-		cpu_label.place(relx=.7,rely=.25)
+		cpu_label.place(x=175,y=25)
 
 		internet_speed_label = tk.Label(self.toplevel, text='DL: -- Kb/s')
-		internet_speed_label.place(relx=.4,rely=.45)
+		internet_speed_label.place(x=100,y=45)
 
 		force_quit_button = tk.Button(self.toplevel, text='Arret forcé', command=self.force_stop, bg='#c83232', activebackground='#ff0000')
-		force_quit_button.place(relx=.7,rely=.7)
+		force_quit_button.place(x=175,y=70)
 
 		self.freeze_button = tk.Button(self.toplevel, text='Suspendre', command=self.freeze_process, bg='#33ccff', activebackground='#ccffff')
-		self.freeze_button.place(relx=.41,rely=.705)
+		self.freeze_button.place(x=102.5,y=70)
+
+		close_button = tk.Button(self.toplevel, text='X', command=self.close_toplevel, bg='#ef242e', activebackground='#ff5050')
+		close_button.place(x=231,y=1,width=18,height=20)
+
+		hide_button = tk.Button(self.toplevel, text='C\na\nc\nh\ne\nr', command=self.hide, bg='#ccccff', activebackground='#9999ff')
+		hide_button.place(x=251,y=1,width=28,height=98)
 
 		self.shown = True
 		self.label_thread = threading.Thread(target=self.update_labels, args=(ram_label,cpu_label,internet_speed_label,lambda : self.shown))
 		self.label_thread.do_run = True
 		self.label_thread.start()
 		self.inthread = True
+
+	def hide(self):
+		self.toplevel.withdraw()
+		unhide_toplevel = tk.Toplevel(width=150,height=50)
+		unhide_toplevel.title('Montrer')
+		unhide_toplevel.resizable(False, False)
+		self.geometry(unhide_toplevel, xyadding=(10,-10))
+		unhide_toplevel.resizable(False, False)
+		self.toplevel.protocol('WM_DELETE_WINDOW', lambda : [self.close_toplevel(), unhide_toplevel.destroy()])
+		unhide_button = tk.Button(unhide_toplevel, text='Montrer', command=lambda : [self.toplevel.deiconify(), unhide_toplevel.destroy()])
+		unhide_button.pack(fill='both',expand=1)
+		unhide_toplevel.wm_state('iconic')
 
 	def update_labels(self, ram_label, cpu_label, internet_speed_label, isvalid):
 		while isvalid() and getattr(threading.currentThread(), "do_run", True):
