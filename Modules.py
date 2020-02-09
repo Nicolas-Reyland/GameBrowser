@@ -126,7 +126,8 @@ class Settings: # SETTINGS NOT ALL IMPLEMENTED YET
 							 'SHOW_BOX': True,
 							 'START_STEAM_AT_STEAM_GAMES': False, # not iplemented
 							 'TOPMOST_BOX': True,
-							 'SAFE_MODE': True}
+							 'SAFE_MODE': True,
+							 'CLOSE_SUPP_WINDOW_AT_PID_LOST': True}
 			self.write()
 
 		else:
@@ -266,3 +267,48 @@ def open_steam():
 		except Exception as e:
 			messagebox.showerror('Erreur', 'Une erreur s\'est produite lors de l\'ouverture de Steam: {}'.format(e))
 	os.chdir(base_path)
+
+class HelpModule:
+	global_help_text = '''Commands:
+ - reload_all
+ - steam
+ - scanner
+ - edit
+ - settings
+ - exit
+ - help
+
+Type "!help {command}" to get more info about a command'''
+
+	commands_usage = {
+							'reload_all': 'Reloads all Games from scratch (to use in case you modified some Games...)',
+
+							'steam': 'opens steam',
+
+							'scanner': '''The "scanner" is a module (it works differently as base commands).
+Scanner commands:
+ - steam: Scans your steam directory to find potential Games
+ - openfolder: Asks for a folder, then scans the folder for
+   potential Games
+ - (None): write the directory path for it to scan directly
+    into the search bar. It will do the same as "openfolder".
+    Use the " at the beginning and end of the path.
+    The (None) means you add the path as a scanner command.''',
+
+							'edit': '''Available Commands:
+ - rename [!edit rename "{name1}" "{name2}"]
+ - exefile [!edit exefile "{game-name}"] (not done yet)''',
+
+							'settings': '''Available Settings:
+ - CLOSE_MAIN_AT_LAUNCH
+ - SHOW_BOX
+ - START_STEAM_AT_STEAM_GAMES
+ - TOPMOST_BOX
+ - CLOSE_SUPP_WINDOW_AT_PID_LOST
+Usage: [!settings {setting-name} {value}]
+Avaibalble values are {0, 1, true, false, TRUE, FALSE, etc.}''',
+
+							'exit': 'Closes the Program.',
+
+							'help': 'Shows the help text.'
+						 }

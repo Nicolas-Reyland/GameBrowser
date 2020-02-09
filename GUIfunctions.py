@@ -102,10 +102,10 @@ def select_game(info):
 
 
 def start_game(gb):
-	if gb.settings.settings['CLOSE_MAIN_AT_LAUNCH']:
-		gb.widg.root.withdraw()
 	if gb.selected:
-		gb.selected.launch(gb.widg.root, gb.settings.settings['SHOW_BOX'], gb.settings.settings['TOPMOST_BOX'], info=gb.settings.settings['CLOSE_MAIN_AT_LAUNCH'])
+		if gb.settings.settings['CLOSE_MAIN_AT_LAUNCH']:
+			gb.widg.root.withdraw()
+		gb.selected.launch(gb.widg.root, gb.settings.settings['SHOW_BOX'], gb.settings.settings['TOPMOST_BOX'], info=[gb.settings.settings['CLOSE_MAIN_AT_LAUNCH'], gb.settings.settings['CLOSE_SUPP_WINDOW_AT_PID_LOST']])
 
 def remove_game(gb):
 	if gb.selected:
@@ -119,6 +119,13 @@ def remove_game(gb):
 def command_handler(command, gb):
 	assert command.startswith('!')
 	command = command[1:]
+	command_list = ['reload_all',
+					'steam',
+					'exit',
+					'help',
+					'scanner',
+					'edit',
+					'settings']
 
 	if command == 'reload_all':
 		gb.games = []
@@ -133,8 +140,7 @@ def command_handler(command, gb):
 	elif command == 'exit':
 		gb.close_root()
 	elif command == 'help':
-		print('not done yet: !{}'.format(command))
-		return
+		messagebox.showinfo('Help', gb.help_module.global_help_text)
 
 	# is there and arguemt ?
 	if len(command.split()) < 2:
@@ -146,6 +152,9 @@ def command_handler(command, gb):
 	args = command[len(module)+1:]
 
 	# choose module
+	if module == 'help':
+		if args in command_list:
+			messagebox.showinfo('Help for {}'.format(args), gb.help_module.commands_usage[args])
 	if module == 'scanner':
 		if args == 'steam':
 			gb.scanner.scan_steam()
@@ -188,6 +197,9 @@ def command_handler(command, gb):
 
 				elif args.startswith('TOPMOST_BOX'):
 					gb.settings.set('TOPMOST_BOX', boolarg)
+
+				elif args.startswith('CLOSE_SUPP_WINDOW_AT_PID_LOST'):
+					gb.settings.set('CLOSE_SUPP_WINDOW_AT_PID_LOST', boolarg)
 
 				else:
 					messagebox.showerror('Erreur', 'Le paramètre {} n\' a pas été trouvé.'.format(args.split()[0]))

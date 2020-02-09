@@ -1,7 +1,7 @@
 # GameBrowser - Game
 import tkinter as tk
 from tkinter.messagebox import askyesno
-from Modules import open_steam
+from Modules import open_steam, Settings
 from icon import extract, bmp_to_logo
 from numpy import load as load_file
 # from screeninfo import get_monitors
@@ -217,7 +217,7 @@ class Game:
 				break
 		print('thread joined')
 		print(f'{self.name} thread stop 2')
-		if self.last_launch_params[2]:
+		if self.last_launch_params[2][0]:
 			self.root.deiconify()
 
 	def find_pids(self):
@@ -236,13 +236,13 @@ class Game:
 		for pid in self.pids:
 			if not pid in pid_list:
 				print('dead')
-				if self.pids:
+				if self.pids and self.last_launch_params[2][1]:
 					if askyesno('Attention', 'Le processus semble avoir été arrêté. Voulez-vous le relancer ? (Une réponse négative fermera la petite fenêtre)'):
 						self.close_toplevel()
-						if self.last_launch_params[2]:
+						if self.last_launch_params[2][0]:
 							self.root.withdraw()
 						self.reset()
-						self.launch(self.root, self.last_launch_params[0], self.last_launch_params[1], self.last_launch_params[2])
+						self.launch(self.root, self.last_launch_params[0], self.last_launch_params[1], self.last_launch_params[2][0])
 					else:
 						self.close_toplevel()
 				break
@@ -262,10 +262,24 @@ def load_games(path):
 		games.append(Game(game_path, name))
 	return games
 
-def icons_from_games(games):
+def icons_from_games(games, no_exception=False):
 	icons = []
+	remove_games = []
 	for game in games:
+		if not os.path.isfile(game.exe_path):
+			print(f'Deleting game {game.name}. Exe_path does not exist.')
+			remove_games.append(game)
+			continue
 		icons.append(extract(game.exe_path))
+	if no_exception and remove_games:
+		raise Exception('Two consecutive exceptions in "icons_from_games"')
+	if not no_exception:
+		for game in remove_games:
+			file_path = os.path.join(os.getcwd(), 'games', game.name) + '.npy'
+			assert os.path.isfile(file_path)
+			os.remove(file_path)
+		if remove_games:
+                        return icons_from_games(games, no_exception=True)
 	return icons
 
 def downspeed():

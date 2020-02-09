@@ -3,7 +3,8 @@ from graphics import widg
 from icon import bmp_to_logo
 from Game import Game, icons_from_games
 from CustomTkWidget import CustomTkWidget
-from Modules import Scanner, Edit, Settings
+from Modules import Scanner, Edit, Settings, HelpModule
+from PIL import ImageTk
 import os, sys
 
 class GameBrowser:
@@ -33,10 +34,15 @@ class GameBrowser:
 
 		self.widg.root.bind('<Return>', lambda _:widg.GUIf.search(self, enter=True))
 
+		# icon
+		# self.widg.root.tk.call('wm', 'iconphoto', self.widg.root._w, ImageTk.PhotoImage(file='GameBrowserIcon.ico'))
+		self.widg.root.wm_iconbitmap('GameBrowserIcon.ico')
+
 		self.base_path = os.getcwd()
 		self.scanner = Scanner(self)
 		self.edit = Edit(self)
 		self.settings = Settings(self)
+		self.help_module = HelpModule
 
 	def get_imwidth(self, l):
 		self.widg.widgets['icon frame'].update()
