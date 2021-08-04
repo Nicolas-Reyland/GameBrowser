@@ -1,5 +1,5 @@
 # GameBrowser - GameBrowser
-from graphics import widg
+import widgets as widg
 from icon import bmp_to_logo
 from Game import Game, icons_from_games
 from CustomTkWidget import CustomTkWidget

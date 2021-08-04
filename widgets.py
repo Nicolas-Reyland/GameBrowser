@@ -1,4 +1,4 @@
-# GameBrowser- graphics
+# GameBrowser - widgets
 import tkinter as tk
 import GUIfunctions as GUIf
 #from tkinter.ttk import Combobox
