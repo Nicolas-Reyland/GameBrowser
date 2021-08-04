@@ -1,4 +1,6 @@
 # GameBrowser ⚠️ french project ⚠️
+🥖 This project is made for french speakers. The GUI is in french, so I figured the README should be in french too. 🥖
+
 Un programme pour parcourir et lancer vos jeux (ou programmes), puis suivre leur performances. Tout ceci, en utilisant bien moins de resources que les programmes typiques de ce type.
 
 ## Installation
