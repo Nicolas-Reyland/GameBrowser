@@ -14,7 +14,7 @@ COMMAND_LIST = ['reload_all',
 				'help',
 				'scanner',
 				'edit',
-					'settings']
+				'settings']
 
 # functions
 def string_score(s1, s2):
