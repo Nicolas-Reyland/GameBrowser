@@ -7,6 +7,16 @@ from icon import extract, bmp_to_logo
 import tkinter as tk
 import os, glob
 
+# constants
+COMMAND_LIST = ['reload_all',
+				'steam',
+				'exit',
+				'help',
+				'scanner',
+				'edit',
+					'settings']
+
+# functions
 def string_score(s1, s2):
 	'''Returns 1 - the start-index of s2 in s1 divided by (the length of s1 - the length of s2)'''
 	s1, s2 = s1.lower(), s2.lower()
@@ -117,15 +127,12 @@ def remove_game(gb):
 			widgets['start button'].configure(bg='#d9d9d9', activebackground='#d9d9d9') # ececec
 
 def command_handler(command, gb):
+	global COMMAND_LIST
 	assert command.startswith('!')
-	command = command[1:]
-	command_list = ['reload_all',
-					'steam',
-					'exit',
-					'help',
-					'scanner',
-					'edit',
-					'settings']
+	command = command[1:] # remove the '!'
+
+	# normalize whitespaces
+	command = ' '.join(filter(None, command.split(' ')))
 
 	if command == 'reload_all':
 		gb.games = []
@@ -153,7 +160,7 @@ def command_handler(command, gb):
 
 	# choose module
 	if module == 'help':
-		if args in command_list:
+		if args in COMMAND_LIST:
 			messagebox.showinfo('Help for {}'.format(args), gb.help_module.commands_usage[args])
 	if module == 'scanner':
 		if args == 'steam':
