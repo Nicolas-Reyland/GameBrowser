@@ -1,0 +1,2 @@
+# you need Microsoft Visual 14.0 or greater
+python-Levenshtein
