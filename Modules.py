@@ -278,37 +278,37 @@ class HelpModule:
  - exit
  - help
 
-Type "!help {command}" to get more info about a command'''
+Ecrire "!help {commande}" pour avoir des information supplémentaires sur une commande'''
 
 	commands_usage = {
-							'reload_all': 'Reloads all Games from scratch (to use in case you modified some Games...)',
+							'reload_all': 'Recharge tous les jeux (à utiliser principalement pour recharger les graphismes)',
 
-							'steam': 'opens steam',
+							'steam': 'Ouvre steam (utile pour lancer les jeux steams)',
 
-							'scanner': '''The "scanner" is a module (it works differently as base commands).
-Scanner commands:
- - steam: Scans your steam directory to find potential Games
- - openfolder: Asks for a folder, then scans the folder for
-   potential Games
- - (None): write the directory path for it to scan directly
-    into the search bar. It will do the same as "openfolder".
-    Use the " at the beginning and end of the path.
-    The (None) means you add the path as a scanner command.''',
+							'scanner': '''Le mot-clé "scanner" désigne un module.
+Commandes scanner:
+ - steam: Scanne vos jeux steam
+ - openfolder: Choisi un dossier, puis le scanne
+ - (rien): Si vous voulez scanner un dossier, vous pouvez
+    entrer son chemin d'accès entre guillemets '"'.
+    Par exemple: '!scanner "C:\\Chemin\\vers\\le\\dossier"'.''',
 
-							'edit': '''Available Commands:
- - rename [!edit rename "{name1}" "{name2}"]
- - exefile [!edit exefile "{game-name}"] (not done yet)''',
+							'edit': '''Le mot-clé "edit" désigne un module.
+Commandes edit:
+ - rename [!edit rename "{ancien-nom}" "{nouveau-nom}"]
+ - exefile [!edit exefile "{nom-du-jeu}"] (pas encore fait)''',
 
-							'settings': '''Available Settings:
+							'settings': '''Le mot-clé "settings" désigne un module.
+Voici les paramètres changeables:
  - CLOSE_MAIN_AT_LAUNCH
  - SHOW_BOX
  - START_STEAM_AT_STEAM_GAMES
  - TOPMOST_BOX
  - CLOSE_SUPP_WINDOW_AT_PID_LOST
-Usage: [!settings {setting-name} {value}]
-Avaibalble values are {0, 1, true, false, TRUE, FALSE, etc.}''',
+Utilisation: [!settings {nom-de-param} {nouvelle-valeur}]
+Les valeurs possibles sont {0, 1, true, false, TRUE, FALSE}''',
 
-							'exit': 'Closes the Program.',
+							'exit': 'Fermer le programme.',
 
-							'help': 'Shows the help text.'
+							'help': "Montre ce message d'aide."
 						 }
