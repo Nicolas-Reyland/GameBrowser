@@ -141,7 +141,7 @@ class GameBrowser:
 				game = Game(path, name)
 				game_icon = game.test_icon()
 				self.games.append(game)
-				self.widg.GUIf.save_file(os.path.join(self.game_path, name), [path, name, game_icon])
+				self.widg.GUIf.save_file(os.path.join(self.game_path, name), {'exe path': path, 'name': name})#, 'icon': game_icon})
 			else:
 				print('already there: {}, {}'.format(name, game_path))
 		self.redraw()

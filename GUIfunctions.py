@@ -1,6 +1,6 @@
 # GameBrowser - GUIfunctions
 from Game import Game, load_games, open_steam
-from numpy import save as save_file
+from file_handler import save_file
 from tkinter import messagebox, filedialog, END # END for an entry clear
 from fuzzywuzzy import fuzz
 from icon import extract, bmp_to_logo
@@ -73,7 +73,7 @@ def add_game(gb):
 		game = Game(game_path, name)
 		gb.add_games([[game_path, name]])
 		game_icon = game.test_icon()
-		save_file(os.path.join(gb.game_path, name), [game_path, name, game_icon])
+		save_file(os.path.join(gb.game_path, name), {'exe path': game_path, 'name': name})#, 'icon': game_icon})
 		gb.redraw()
 
 def select_game(info):

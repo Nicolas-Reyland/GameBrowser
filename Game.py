@@ -3,7 +3,7 @@ import tkinter as tk
 from tkinter.messagebox import askyesno
 from Modules import open_steam, Settings
 from icon import extract, bmp_to_logo
-from numpy import load as load_file
+from file_handler import load_file
 # from screeninfo import get_monitors
 from win32api import GetMonitorInfo, MonitorFromPoint
 import os, threading, time, requests, sys
@@ -257,8 +257,10 @@ def load_games(path):
 		os.mkdir(path)
 		print('created path')
 	for file in os.listdir(path):
-		game = load_file(os.path.join(path, file), allow_pickle=True)
-		game_path, name, logo = game
+		game = load_file(os.path.join(path, file))
+		game_path = game['exe path']
+		name = game['name']
+		# logo = game['logo']
 		games.append(Game(game_path, name))
 	return games
 

@@ -4,7 +4,7 @@ from tkinter import filedialog, messagebox
 from fuzzywuzzy import fuzz
 from icon import extract, bmp_to_logo
 from CustomTkWidget import CustomTkWidget
-from numpy import save as save_file
+from file_handler import save_file
 import os, glob, threading
 import win32api, pywintypes
 import json
@@ -105,7 +105,7 @@ class Edit:
 			new_game = Game(base_game.exe_path, new_name)
 			os.remove(os.path.join(os.getcwd(), self.gb.game_path, base_game.name + '.npy'))
 			game_icon = new_game.test_icon()
-			save_file(os.path.join(self.gb.game_path, new_name), [new_game.exe_path, new_name, game_icon])
+			save_file(os.path.join(self.gb.game_path, new_name), {'exe path': new_game.exe_path, 'name': new_name, 'icon': game_icon})
 
 	def edit_exefile(self, args):
 		print('not done yet: edit_exefile')

@@ -1,6 +1,5 @@
 pywin32
 fuzzywuzzy
-numpy
 opencv-python
 pillow
 psutil
